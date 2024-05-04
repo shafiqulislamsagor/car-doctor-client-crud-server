@@ -3,12 +3,17 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
+const cookieParser = require('cookie-parser');
 const app = express();
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(cors());
+app.use(cors({
+    origin:'http://localhost:5173',
+    credentials:true,
+}));
 app.use(express.json());
+app.use(cookieParser())
 
 
 
@@ -43,9 +48,9 @@ async function run() {
             const user = req.body;
             console.log(user);
             console.log(process.env.ACCESS_TOKEN_SECRET);
-            const temper = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
             res
-            .cookie('token',temper,{
+            .cookie('token',token,{
                 httpOnly:true,
                 secure:false,
                 sameSite:'none'
@@ -78,6 +83,7 @@ async function run() {
         // bookings 
         app.get('/bookings', async (req, res) => {
             // console.log(req.query.email);
+            console.log('tok tok token',req.cookies.token);
             let query = {};
             if (req.query?.email) {
                 query = { email: req.query.email }
